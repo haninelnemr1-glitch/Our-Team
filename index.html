@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خطانا خضراء - Khotana Khadra</title>
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ==================== ONBOARDING / AUTH MODAL ==================== -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-card">
+            
+            <!-- STEP 0: Initial Question (First Time vs Returning) -->
+            <div id="authStep0" class="auth-step active">
+                <div class="brand-header">
+                    <i class="fa-solid fa-leaf brand-logo-icon"></i>
+                    <h2>مبادرة خطانا خضراء</h2>
+                    <p>أهلاً بك في منصتنا البيئية والتطوعية</p>
+                </div>
+                <div class="onboarding-question-box">
+                    <i class="fa-solid fa-circle-question question-icon"></i>
+                    <h3>هل هذه أول مرة تسجل فيها؟</h3>
+                    <div class="step0-actions">
+                        <button class="btn btn-primary" onclick="goToAuthStep('register')">
+                            <i class="fa-solid fa-user-plus"></i> نعم، تسجيل جديد
+                        </button>
+                        <button class="btn btn-secondary" onclick="goToAuthStep('login')">
+                            <i class="fa-solid fa-right-to-bracket"></i> لا، لدي حساب سبق تسجيله
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 1: Quick Login (Returning User) -->
+            <div id="authStepLogin" class="auth-step">
+                <div class="brand-header">
+                    <h2>تسجيل الدخول السريع</h2>
+                    <p>أدخل اسمك المسجل بالمنظومة للوصول السريع</p>
+                </div>
+                <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+                    <div class="form-group">
+                        <label for="loginNameInput"><i class="fa-solid fa-user"></i> اسم العضو:</label>
+                        <input type="text" id="loginNameInput" class="form-input" placeholder="أدخل اسمك الثلاثي أو المعتمد..." required autocomplete="off">
+                        <small class="form-hint">مسموح فقط لأعضاء الفريق المعتمدين.</small>
+                    </div>
+                    <div id="loginError" class="alert alert-danger hidden">
+                        <i class="fa-solid fa-triangle-exclamation"></i> الاسم غير مدرج ضمن قائمة الفريق. الرجاء التأكد أو التسجيل كعضو جديد.
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-text" onclick="goToAuthStep('init')">
+                            <i class="fa-solid fa-arrow-right"></i> رجوع
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            دخول <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- STEP 2: Full Registration -->
+            <div id="authStepRegister" class="auth-step">
+                <div class="brand-header">
+                    <h2>إنشاء ملف عضو جديد</h2>
+                    <p>يرجى اختيار اسمك واكمال البيانات للانضمام</p>
+                </div>
+                <form id="registerForm" onsubmit="handleRegisterSubmit(event)">
+                    <div class="form-group">
+                        <label for="regNameSelect"><i class="fa-solid fa-user-check"></i> حدد اسمك من القائمة الرسمية:</label>
+                        <select id="regNameSelect" class="form-input" required onchange="handleRegisterNameChange(this.value)">
+                            <option value="" disabled selected>-- اختر اسمك --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-image"></i> الصورة الشخصية:</label>
+                        <div class="avatar-upload-tabs">
+                            <button type="button" class="tab-btn active" id="tabBtnFile" onclick="switchAvatarTab('file')">رفع ملف</button>
+                            <button type="button" class="tab-btn" id="tabBtnUrl" onclick="switchAvatarTab('url')">رابط صورة (URL)</button>
+                        </div>
+                        <div id="avatarFileInputGroup" class="avatar-input-group">
+                            <input type="file" id="regAvatarFile" accept="image/*" class="form-input" onchange="previewAvatarFromFile(this)">
+                        </div>
+                        <div id="avatarUrlInputGroup" class="avatar-input-group hidden">
+                            <input type="url" id="regAvatarUrl" class="form-input" placeholder="https://example.com/photo.jpg" onchange="previewAvatarFromUrl(this.value)">
+                        </div>
+                        <div class="avatar-preview-wrapper">
+                            <img id="regAvatarPreview" src="https://ui-avatars.com/api/?name=User&background=2d6a4f&color=fff" alt="معاينة الصورة">
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="committeeSelectGroup">
+                        <label for="regCommittee"><i class="fa-solid fa-users-gear"></i> اللجنة التابع لها:</label>
+                        <select id="regCommittee" class="form-input">
+                            <option value="" disabled selected>-- اختر اللجنة --</option>
+                            <option value="HR">الموارد البشرية (HR)</option>
+                            <option value="Operations">العمليات واللوجستيات (Operations)</option>
+                            <option value="Activities">الأنشطة والفاعليات (Activities)</option>
+                            <option value="Content Writing">كتابة المحتوى (Content Writing)</option>
+                            <option value="Graphic Design">التصميم والجرافيك (Graphic Design)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="regIsFounder" onchange="toggleFounderPasscodeGroup(this.checked)">
+                            <span>هل أنت الفاوندر؟ (مؤسس المبادرة)</span>
+                        </label>
+                    </div>
+
+                    <div id="founderPasscodeGroup" class="form-group hidden">
+                        <label for="regFounderCode"><i class="fa-solid fa-key"></i> كود التحقق الخاص بالفاوندر:</label>
+                        <input type="password" id="regFounderCode" class="form-input" placeholder="أدخل كود الأمان">
+                    </div>
+
+                    <div id="registerError" class="alert alert-danger hidden"></div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-text" onclick="goToAuthStep('init')">
+                            <i class="fa-solid fa-arrow-right"></i> رجوع
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            تأكيد وتسجيل الدخول <i class="fa-solid fa-check"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==================== MAIN DASHBOARD ==================== -->
+    <div id="mainDashboard" class="dashboard-wrapper hidden">
+        
+        <!-- Header / Navigation -->
+        <header class="main-header">
+            <div class="header-container">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-seedling brand-icon"></i>
+                    <div>
+                        <h1>خطانا خضراء</h1>
+                        <p class="tagline">نحو مستقبل بيئي مستدام</p>
+                    </div>
+                </div>
+
+                <div class="user-header-info">
+                    <div class="current-user-card">
+                        <img id="navUserAvatar" src="" alt="صورة العضو" class="user-avatar-sm">
+                        <div class="user-text-info">
+                            <span id="navUserName" class="user-name-display">...</span>
+                            <span id="navUserRole" class="user-role-badge">...</span>
+                        </div>
+                    </div>
+
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="openEditProfileModal()">
+                            <i class="fa-solid fa-user-pen"></i> تعديل البيانات
+                        </button>
+                        <button class="btn btn-danger-outline" onclick="handleLogout()">
+                            <i class="fa-solid fa-right-from-bracket"></i> خروج
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-body">
+            
+            <!-- SECTION 1: FOUNDER SHOWCASE -->
+            <section class="founder-section">
+                <div class="section-title">
+                    <i class="fa-solid fa-crown gold-crown"></i>
+                    <h2>مؤسس المبادرة</h2>
+                </div>
+                <div class="founder-card-container">
+                    <div class="founder-card" id="founderDisplayCard">
+                        <div class="founder-badge-banner">
+                            <i class="fa-solid fa-award"></i> مؤسس المبادرة (Founder)
+                        </div>
+                        <div class="founder-avatar-frame">
+                            <img id="founderPhoto" src="771821083_18039026267815893_8617930397081388043_n.jpg" alt="Hanin Elnemr">
+                        </div>
+                        <h3 class="founder-name" id="founderName">Hanin Elnemr</h3>
+                        <p class="founder-bio">قائدة ومؤسسة مبادرة خطانا خضراء للتنمية المستدامة والتوعية البيئية.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: QUESTION OF THE DAY & ANSWERS -->
+            <section class="qna-section">
+                <div class="qna-card">
+                    <div class="qna-header">
+                        <div class="qna-title-group">
+                            <i class="fa-solid fa-comments qna-icon"></i>
+                            <div>
+                                <h2>سؤال لنتعرف على بعض أكثر</h2>
+                                <p class="qna-subtitle"><i class="fa-solid fa-clock-rotate-left"></i> تظهر إجابات الأعضاء لمدة 24 ساعة فقط ثم تختفي تلقائياً</p>
+                            </div>
+                        </div>
+
+                        <!-- Founder Only Controls -->
+                        <div id="founderQControl" class="founder-controls hidden">
+                            <button class="btn btn-gold" onclick="openPublishQuestionModal()">
+                                <i class="fa-solid fa-plus-circle"></i> نشر سؤال جديد
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Active Question Box -->
+                    <div class="active-question-box">
+                        <div class="q-label"><i class="fa-solid fa-quote-right"></i> السؤال الحالي:</div>
+                        <h3 id="displayQuestionText" class="q-text">لا يوجد سؤال مطروح حالياً من الفاوندر.</h3>
+                        <div class="q-meta" id="displayQuestionMeta"></div>
+                    </div>
+
+                    <!-- Answer Submission Form -->
+                    <div class="answer-input-container">
+                        <form id="answerForm" onsubmit="handleAnswerSubmit(event)">
+                            <div class="answer-input-wrapper">
+                                <textarea id="userAnswerText" class="form-input textarea-input" rows="2" placeholder="اكتب إجابتك هنا وشاركنا رأيك..." required></textarea>
+                                <button type="submit" class="btn btn-primary btn-submit-answer">
+                                    نشر الإجابة <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Answers Feed Grid -->
+                    <div class="answers-feed-wrapper">
+                        <div class="answers-header-bar">
+                            <h4><i class="fa-solid fa-layer-group"></i> إجابات الأعضاء (النشطة خلال 24 ساعة):</h4>
+                            <span id="answersCountBadge" class="count-badge">0 إجابة</span>
+                        </div>
+                        <div id="answersGrid" class="answers-grid">
+                            <!-- Dynamic Answers rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: COMMITTEES DASHBOARD -->
+            <section class="committees-section">
+                <div class="section-title">
+                    <i class="fa-solid fa-sitemap"></i>
+                    <h2>لجان وفريق العمل</h2>
+                </div>
+
+                <div class="committees-grid">
+                    
+                    <!-- HR Committee -->
+                    <div class="committee-card">
+                        <div class="committee-card-header hr-header">
+                            <i class="fa-solid fa-users"></i>
+                            <h3>الموارد البشرية (HR)</h3>
+                        </div>
+                        <div class="committee-members-list" id="committeeList-HR">
+                            <div class="empty-committee">لا يوجد أعضاء حالياً</div>
+                        </div>
+                    </div>
+
+                    <!-- Operations Committee -->
+                    <div class="committee-card">
+                        <div class="committee-card-header ops-header">
+                            <i class="fa-solid fa-gears"></i>
+                            <h3>العمليات واللوجستيات (Operations)</h3>
+                        </div>
+                        <div class="committee-members-list" id="committeeList-Operations">
+                            <div class="empty-committee">لا يوجد أعضاء حالياً</div>
+                        </div>
+                    </div>
+
+                    <!-- Activities Committee -->
+                    <div class="committee-card">
+                        <div class="committee-card-header act-header">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            <h3>الأنشطة والفاعليات (Activities)</h3>
+                        </div>
+                        <div class="committee-members-list" id="committeeList-Activities">
+                            <div class="empty-committee">لا يوجد أعضاء حالياً</div>
+                        </div>
+                    </div>
+
+                    <!-- Content Writing Committee -->
+                    <div class="committee-card">
+                        <div class="committee-card-header content-header">
+                            <i class="fa-solid fa-pen-nib"></i>
+                            <h3>كتابة المحتوى (Content Writing)</h3>
+                        </div>
+                        <div class="committee-members-list" id="committeeList-Content Writing">
+                            <div class="empty-committee">لا يوجد أعضاء حالياً</div>
+                        </div>
+                    </div>
+
+                    <!-- Graphic Design Committee -->
+                    <div class="committee-card">
+                        <div class="committee-card-header design-header">
+                            <i class="fa-solid fa-palette"></i>
+                            <h3>التصميم والجرافيك (Graphic Design)</h3>
+                        </div>
+                        <div class="committee-members-list" id="committeeList-Graphic Design">
+                            <div class="empty-committee">لا يوجد أعضاء حالياً</div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="main-footer">
+            <p>جميع الحقوق محفوظة &copy; 2026 لمبادرة <strong>خطانا خضراء (Khotana Khadra)</strong></p>
+        </footer>
+    </div>
+
+    <!-- ==================== EDIT PROFILE MODAL ==================== -->
+    <div id="editProfileModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-card-header">
+                <h3><i class="fa-solid fa-user-pen"></i> تعديل البيانات الشخصية</h3>
+                <button class="btn-close" onclick="closeEditProfileModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="editProfileForm" onsubmit="handleEditProfileSubmit(event)">
+                <div class="form-group">
+                    <label for="editNameInput"><i class="fa-solid fa-user"></i> الاسم:</label>
+                    <input type="text" id="editNameInput" class="form-input" disabled>
+                    <small class="form-hint">الاسم مرتبط برقم العضوية ولا يمكن تغييره بشكل مباشر.</small>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-image"></i> الصورة الشخصية:</label>
+                    <div class="avatar-upload-tabs">
+                        <button type="button" class="tab-btn active" id="editTabBtnFile" onclick="switchEditAvatarTab('file')">رفع ملف</button>
+                        <button type="button" class="tab-btn" id="editTabBtnUrl" onclick="switchEditAvatarTab('url')">رابط صورة (URL)</button>
+                    </div>
+                    <div id="editAvatarFileInputGroup" class="avatar-input-group">
+                        <input type="file" id="editAvatarFile" accept="image/*" class="form-input" onchange="previewEditAvatarFromFile(this)">
+                    </div>
+                    <div id="editAvatarUrlInputGroup" class="avatar-input-group hidden">
+                        <input type="url" id="editAvatarUrl" class="form-input" placeholder="https://example.com/photo.jpg" onchange="previewEditAvatarFromUrl(this.value)">
+                    </div>
+                    <div class="avatar-preview-wrapper">
+                        <img id="editAvatarPreview" src="" alt="معاينة الصورة">
+                    </div>
+                </div>
+
+                <div class="form-group" id="editCommitteeGroup">
+                    <label for="editCommitteeSelect"><i class="fa-solid fa-users-gear"></i> اللجنة:</label>
+                    <select id="editCommitteeSelect" class="form-input">
+                        <option value="HR">الموارد البشرية (HR)</option>
+                        <option value="Operations">العمليات واللوجستيات (Operations)</option>
+                        <option value="Activities">الأنشطة والفاعليات (Activities)</option>
+                        <option value="Content Writing">كتابة المحتوى (Content Writing)</option>
+                        <option value="Graphic Design">التصميم والجرافيك (Graphic Design)</option>
+                    </select>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="editIsFounder" onchange="toggleEditFounderPasscodeGroup(this.checked)">
+                        <span>صفة الفاوندر (مؤسس المبادرة)</span>
+                    </label>
+                </div>
+
+                <div id="editFounderPasscodeGroup" class="form-group hidden">
+                    <label for="editFounderCode"><i class="fa-solid fa-key"></i> أدخل كود التحقق الأمني للفاوندر (727):</label>
+                    <input type="password" id="editFounderCode" class="form-input" placeholder="كود الأمان">
+                </div>
+
+                <div id="editProfileError" class="alert alert-danger hidden"></div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditProfileModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== PUBLISH QUESTION MODAL (FOUNDER ONLY) ==================== -->
+    <div id="publishQuestionModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-card-header">
+                <h3><i class="fa-solid fa-bullhorn"></i> طرح سؤال جديد للأعضاء</h3>
+                <button class="btn-close" onclick="closePublishQuestionModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="publishQuestionForm" onsubmit="handlePublishQuestionSubmit(event)">
+                <div class="form-group">
+                    <label for="newQuestionInput"><i class="fa-solid fa-circle-question"></i> نص السؤال:</label>
+                    <textarea id="newQuestionInput" class="form-input textarea-input" rows="4" placeholder="اكتب السؤال التفاعلي هنا..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closePublishQuestionModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-gold">نشر السؤال للجميع</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom JS Script -->
+    <script src="script.js"></script>
+</body>
+</html>
